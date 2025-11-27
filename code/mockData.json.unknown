@@ -1,0 +1,16 @@
+[
+  {
+    "title": "C Programming Book",
+    "category": "Books",
+    "condition": "Used",
+    "image": "https://via.placeholder.com/150",
+    "owner": "user123"
+  },
+  {
+    "title": "Scientific Calculator",
+    "category": "Gadgets",
+    "condition": "Good",
+    "image": "https://via.placeholder.com/150",
+    "owner": "user456"
+  }
+]
