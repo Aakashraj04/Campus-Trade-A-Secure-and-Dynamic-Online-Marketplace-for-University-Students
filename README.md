@@ -37,6 +37,7 @@ Campus Trade is a secure and user-friendly online marketplace designed exclusive
 
 System Output Summary:
 The system successfully enables students to log in, post items, browse listings, view item details, and message sellers through a seamless and user-friendly interface.
+
 Note:
 This system is evaluated based on user experience, interface functionality, and platform performance, not detection accuracy.
 
