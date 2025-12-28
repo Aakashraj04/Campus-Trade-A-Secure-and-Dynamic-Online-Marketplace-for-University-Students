@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Posts • Campus Trade</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen">
+
+<!-- 🌟 PAGE CONTAINER -->
+<div class="max-w-6xl mx-auto px-4 sm:px-6">
+
+  <!-- 🔝 HEADER -->
+  <header class="text-center py-10">
+    <h1 class="text-4xl font-bold tracking-tight">
+      📦 My Posts
+    </h1>
+    <p class="text-gray-400 mt-2">
+      Manage everything you’ve listed on Campus Trade
+    </p>
+  </header>
+
+  <!-- 🔍 SEARCH -->
+  <div class="flex justify-center mb-10">
+    <input
+      id="searchInput"
+      type="text"
+      placeholder="Search your posts…"
+      class="w-full max-w-md px-5 py-3 rounded-full
+             bg-gray-900 text-white
+             border border-gray-700
+             focus:outline-none focus:border-yellow-400
+             transition"
+    />
+  </div>
+
+  <!-- 🧱 POSTS GRID -->
+  <section>
+    <div
+      id="postsContainer"
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10"
+    ></div>
+
+    <!-- EMPTY STATE -->
+    <div
+      id="noPosts"
+      class="hidden flex flex-col items-center justify-center
+             text-gray-400 py-24">
+      <p class="text-2xl mb-2">No posts yet</p>
+      <p class="text-sm">Your listed items will appear here 🚀</p>
+    </div>
+  </section>
+
+</div>
+
+<!-- 🔥 SCRIPT -->
+<script type="module">
+/* ================== FIREBASE IMPORTS ================== */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence
+} from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  onSnapshot,
+  deleteDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+
+/* ================== CONFIG ================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyDWhJpHltwnlLQaaI17nfMjg8HEzbqC974",
+  authDomain: "campus-trade-905da.firebaseapp.com",
+  projectId: "campus-trade-905da"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+await setPersistence(auth, browserLocalPersistence);
+
+/* ================== UI ================== */
+const postsContainer = document.getElementById("postsContainer");
+const noPosts = document.getElementById("noPosts");
+const searchInput = document.getElementById("searchInput");
+
+/* ================== AUTH GUARD ================== */
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "login11.html";
+    return;
+  }
+
+  const q = query(
+    collection(db, "posts"),
+    where("ownerId", "==", user.uid)
+  );
+
+  onSnapshot(q, (snapshot) => {
+    postsContainer.innerHTML = "";
+
+    if (snapshot.empty) {
+      noPosts.classList.remove("hidden");
+      return;
+    }
+
+    noPosts.classList.add("hidden");
+
+    snapshot.forEach(docSnap => {
+    const p = docSnap.data();
+    const postId = docSnap.id;
+
+
+      postsContainer.innerHTML += `
+        <article
+        class="bg-white text-black rounded-3xl overflow-hidden
+        shadow-lg hover:shadow-2xl
+        transition-transform hover:scale-[1.02]"
+        data-title="${p.title.toLowerCase()}"
+        data-id="${postId}">
+
+
+          <!-- IMAGE -->
+          <div class="relative">
+            <img
+              src="${p.image || 'https://via.placeholder.com/600x400?text=No+Image'}"
+              class="w-full h-56 object-cover"
+            />
+
+            <span
+              class="absolute top-4 left-4 px-3 py-1 text-xs font-semibold
+                     rounded-full shadow
+                     ${p.available ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}">
+              ${p.available ? 'Available' : 'Sold'}
+            </span>
+          </div>
+
+          <!-- CONTENT -->
+          <div class="p-5 space-y-3">
+            <h3 class="text-lg font-bold truncate">
+              ${p.title}
+            </h3>
+
+            <p class="text-2xl font-semibold text-yellow-600">
+              ₹${p.price}
+            </p>
+
+            <div class="flex gap-3 pt-3">
+              <button
+  class="flex-1 py-2 rounded-full bg-black text-white hover:bg-gray-800"
+  onclick="viewPost('${postId}')">
+  View
+</button>
+
+<button
+  class="flex-1 py-2 rounded-full bg-red-500 text-white hover:bg-red-600"
+  onclick="deletePost('${postId}')">
+  Delete
+</button>
+
+            </div>
+          </div>
+        </article>
+      `;
+    });
+  });
+});
+
+/* ================== SEARCH ================== */
+searchInput.addEventListener("input", () => {
+  const value = searchInput.value.toLowerCase();
+  document.querySelectorAll("[data-title]").forEach(card => {
+    card.style.display =
+      card.dataset.title.includes(value) ? "block" : "none";
+  });
+});
+/* 👁️ VIEW POST */
+window.viewPost = function (postId) {
+  alert("View post coming soon 🔍\nPost ID: " + postId);
+  // Later → open modal like home page
+};
+
+/* 🗑️ DELETE POST */
+
+
+window.deletePost = async function (postId) {
+  const confirmDelete = confirm("Are you sure you want to delete this post?");
+  if (!confirmDelete) return;
+
+  try {
+    await deleteDoc(doc(db, "posts", postId));
+    alert("Post deleted successfully 🗑️");
+  } catch (err) {
+    console.error(err);
+    alert("Failed to delete post");
+  }
+};
+
+</script>
+
+</body>
+</html>
